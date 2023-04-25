@@ -38,10 +38,18 @@ function ProfileScreen({navigation}) {
             width: 35,
             backgroundColor: '#495E57',
             borderRadius: 50,
+            marginTop: 20,
+            marginLeft: 15,
           }}>
-          <Icon name="arrow-left" size={26} color="white" />
+          <Icon
+            name="angle-left"
+            size={26}
+            color="white"
+            style={{alignSelf: 'center', paddingTop: 3}}
+          />
         </View>
         <Image style={styles.logo} source={require('../assets/Logo.png')} />
+        <View style={{height: 50, width: 50}}></View>
       </View>
       <View style={{height: height * 0.7}}>
         <Text style={styles.text2}>Personal Information</Text>
@@ -103,6 +111,7 @@ const styles = StyleSheet.create({
     height: height * 0.1,
     width: width,
     flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   logo: {
     height: height * 0.07,

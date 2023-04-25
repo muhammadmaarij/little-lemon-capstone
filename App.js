@@ -1,59 +1,76 @@
-// import React, {useState, useEffect} from 'react';
-// import {NavigationContainer} from '@react-navigation/native';
-// import {createNativeStackNavigator} from '@react-navigation/stack';
-// import Profile from './screens/Profile';
-// import Onboarding from './screens/Onboarding';
-
-// const Stack = createNativeStackNavigator();
-
-// function App() {
-//   const [completedOnboarding, setCompletedOnboarding] = useState(false);
-
-//   useEffect(() => {
-//     // Check if the user has completed onboarding (e.g. by checking a local storage value)
-//     const hasCompletedOnboarding = true; // Replace with actual logic
-
-//     setCompletedOnboarding(hasCompletedOnboarding);
-//   }, []);
-
-//   return (
-//     <NavigationContainer>
-//       <Stack.Navigator>
-//         {!completedOnboarding ? (
-//           <Stack.Screen name="Onboarding" component={Onboarding} />
-//         ) : (
-//           <>
-//             <Stack.Screen name="Profile" component={Profile} />
-//           </>
-//         )}
-//       </Stack.Navigator>
-//     </NavigationContainer>
-//   );
-// }
-
-// export default App;
-
 import * as React from 'react';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import OnboardingScreen from './screens/Onboarding';
 import ProfileScreen from './screens/Profile';
+import Home from './screens/Home';
 
 const Stack = createNativeStackNavigator();
 
 function App() {
-  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [completedOnboarding, setCompletedOnboarding] = useState(false);
+
+  useEffect(() => {
+    // Read from AsyncStorage to determine if onboarding is completed
+    console.log(completedOnboarding);
+    AsyncStorage.getItem('completedOnboarding').then(value => {
+      if (value === 'true') {
+        setCompletedOnboarding(true);
+        setLoading(false);
+      }
+    });
+  }, []);
+
+  const handleOnboardingComplete = () => {
+    // Update local state and store in AsyncStorage
+    setCompletedOnboarding(true);
+    AsyncStorage.setItem('completedOnboarding', 'true');
+  };
+
+  // if (loading) {
+  //   // return <Splash />;
+  // }
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {isSignedIn == true ? (
+        {!completedOnboarding ? (
           <>
-            <Stack.Screen name="Profile" component={ProfileScreen} />
+            <Stack.Screen
+              name="Profile"
+              component={ProfileScreen}
+              // initialParams={userDetails}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="Home"
+              component={Home}
+              options={{headerShown: false}}
+            />
           </>
         ) : (
           <>
-            <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+            <Stack.Screen
+              name="Onboarding"
+              component={OnboardingScreen}
+              options={{headerShown: false}}
+              // Pass a function to be called when onboarding is completed
+              initialParams={{onComplete: handleOnboardingComplete}}
+            />
+            <Stack.Screen
+              name="Profile"
+              component={ProfileScreen}
+              options={{headerShown: false}}
+
+              // initialParams={userDetails}
+            />
+            <Stack.Screen
+              name="Home"
+              component={Home}
+              options={{headerShown: false}}
+            />
           </>
         )}
       </Stack.Navigator>

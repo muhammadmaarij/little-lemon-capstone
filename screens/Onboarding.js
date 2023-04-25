@@ -9,12 +9,18 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import React, {useState} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const {width, height} = Dimensions.get('window');
 
-export default function Onboarding() {
+export default function Onboarding({navigation, route}) {
+  const {onComplete} = route.params;
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
+  const [userDetails, setUserDetails] = useState({
+    firstName: '',
+    emailAddress: '',
+  });
 
   const validateName = text => {
     // check if input is empty or contains non-string characters
@@ -73,6 +79,17 @@ export default function Onboarding() {
         onPress={() => {
           validateName(firstName);
           validateEmail(email);
+          onComplete();
+          setUserDetails({
+            firstName,
+            email,
+          });
+          AsyncStorage.setItem(
+            'setUserDetails',
+            JSON.stringify({firstName, email}),
+          );
+          navigation.navigate('Profile');
+          console.log(userDetails);
         }}
         disabled={firstName == '' || email == ''}>
         <Text style={{fontSize: 26, alignSelf: 'center', fontWeight: '600'}}>

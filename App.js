@@ -38,12 +38,12 @@ function App() {
       <Stack.Navigator>
         {!completedOnboarding ? (
           <>
-            <Stack.Screen
+            {/* <Stack.Screen
               name="Profile"
               component={ProfileScreen}
               // initialParams={userDetails}
               options={{headerShown: false}}
-            />
+            /> */}
             <Stack.Screen
               name="Home"
               component={Home}

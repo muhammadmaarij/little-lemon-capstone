@@ -12,13 +12,60 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {MaskedTextInput} from 'react-native-mask-text';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import SelectMultiple from 'react-native-select-multiple';
+import ImagePicker from 'react-native-image-picker';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import RNFS from 'react-native-fs';
 
 const {width, height} = Dimensions.get('window');
 
 function ProfileScreen({navigation}) {
-  const [firstName, setFirstName] = useState('');
+  const [firstName, setFirstName] = useState('A');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [imageURI, setImageURI] = useState(null);
+
+  // const handleImagePicker = () => {
+  //   ImagePicker.showImagePicker({}, response => {
+  //     if (response.didCancel) {
+  //       console.log('User cancelled image picker');
+  //     } else if (response.error) {
+  //       console.log('ImagePicker Error: ', response.error);
+  //     } else {
+  //       setImageURI(response.uri);
+  //     }
+  //   });
+  // };
+
+  const handleImagePicker = async camera => {
+    let options = {
+      mediaType: 'photo',
+    };
+    let response;
+    if (camera) {
+      response = await launchCamera(options);
+    } else {
+      response = await launchImageLibrary(options);
+    }
+    console.log(response);
+    if (response.didCancel) {
+      console.log('User cancelled image picker');
+    } else if (response.error) {
+      console.log('ImagePicker Error: ', response.error);
+    } else {
+      const base64Image = await RNFS.readFile(response.assets[0].uri, 'base64');
+      await AsyncStorage.setItem('selectedImage', base64Image);
+      setImageURI(response.assets[0].uri);
+    }
+  };
+
+  const onSelectionsChange = selectedItems => {
+    // selectedItems is an array of { label, value } objects
+    setSelectedItems(selectedItems);
+  };
+
+  const emailNotifications = ['Special Offers', 'Newsletter'];
 
   useEffect(() => {
     // Retrieve the stored user details from AsyncStorage
@@ -27,6 +74,10 @@ function ProfileScreen({navigation}) {
       setFirstName(userDetails.firstName);
       setEmail(userDetails.email);
     });
+    const base64Image = AsyncStorage.getItem('selectedImage');
+    if (base64Image) {
+      setImageURI(`data:image/jpeg;base64,${base64Image}`);
+    }
   }, []);
 
   return (
@@ -51,11 +102,31 @@ function ProfileScreen({navigation}) {
         <Image style={styles.logo} source={require('../assets/Logo.png')} />
         <View style={{height: 50, width: 50}}></View>
       </View>
-      <View style={{height: height * 0.7}}>
+      <View style={{height: height * 0.49}}>
         <Text style={styles.text2}>Personal Information</Text>
         <Text style={styles.text}>Avatar</Text>
         <View style={{flexDirection: 'row', justifyContent: 'space-evenly'}}>
-          <Pressable style={styles.button2}>
+          {imageURI ? (
+            <Image
+              source={{uri: imageURI}}
+              style={{width: 60, height: 60, borderRadius: 75}}
+            />
+          ) : (
+            <View
+              style={{
+                width: 60,
+                height: 60,
+                borderRadius: 75,
+                backgroundColor: 'lightgray',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Text style={styles.placeholderText}>
+                {`${firstName.charAt(0)}`}
+              </Text>
+            </View>
+          )}
+          <Pressable style={styles.button2} onPress={handleImagePicker}>
             <Text style={{fontSize: 15, color: '#EDEFEE'}}>Change</Text>
           </Pressable>
           <Pressable style={styles.button3}>
@@ -64,7 +135,6 @@ function ProfileScreen({navigation}) {
         </View>
         <View></View>
         <KeyboardAvoidingView
-          style={{flex: 1}}
           behavior={Platform.OS === 'ios' ? 'padding' : 'position'}
           keyboardVerticalOffset={65}>
           <View style={{marginTop: 15}}>
@@ -94,14 +164,49 @@ function ProfileScreen({navigation}) {
           </View>
         </KeyboardAvoidingView>
       </View>
+      <View>
+        <Text style={styles.text2}>Email notifications</Text>
+        <SelectMultiple
+          items={emailNotifications}
+          selectedItems={selectedItems}
+          onSelectionsChange={onSelectionsChange}
+          style={{backgroundColor: '#EDEFEE'}}
+          rowStyle={{padding: 5, backgroundColor: '#EDEFEE'}}
+          labelStyle={{color: '#495E57', fontWeight: 'normal'}}
+          checkboxStyle={{color: 'green'}}
+        />
+        <View>
+          {selectedItems.map((item, index) => (
+            <Text key={index}>{item.label}</Text>
+          ))}
+        </View>
+      </View>
+      <Pressable style={styles.button}>
+        <Text
+          style={{fontSize: 23, alignSelf: 'center', fontWeight: '600'}}
+          onPress={() => {
+            try {
+              // Clear all data from the disk
+              AsyncStorage.clear();
 
-      <Pressable
-        style={styles.button}
-        disabled={firstName == '' || email == ''}>
-        <Text style={{fontSize: 26, alignSelf: 'center', fontWeight: '600'}}>
-          Next
+              // Navigate to the Onboarding screen
+              navigation.navigate('Home');
+              AsyncStorage.setItem('completedOnboarding', 'true');
+            } catch (error) {
+              console.error('Error logging out:', error);
+            }
+          }}>
+          Logout
         </Text>
       </Pressable>
+      <View style={{flexDirection: 'row', justifyContent: 'space-evenly'}}>
+        <Pressable style={[styles.button3, {width: width * 0.32}]}>
+          <Text>Discard changes</Text>
+        </Pressable>
+        <Pressable style={[styles.button2, {width: width * 0.3}]}>
+          <Text style={{fontSize: 15, color: '#EDEFEE'}}>Save changes</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -131,18 +236,18 @@ const styles = StyleSheet.create({
     width: width * 0.92,
     alignSelf: 'center',
     marginTop: 5,
-    marginBottom: 20,
+    marginBottom: 5,
     height: height * 0.055,
   },
   button: {
     height: 45,
-    width: width * 0.3,
-    backgroundColor: 'green',
+    width: width * 0.9,
+    backgroundColor: '#F4CE14',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 8,
-    margin: 30,
-    marginLeft: 250,
+    marginVertical: 20,
+    alignSelf: 'center',
   },
   text2: {
     fontSize: 18,

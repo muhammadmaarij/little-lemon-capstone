@@ -54,7 +54,8 @@ export default function Onboarding({navigation, route}) {
         <Text style={styles.text}>Let us get to know you</Text>
         <KeyboardAvoidingView
           style={{flex: 1}}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'position'}
+          // behavior={Platform.OS === 'ios' ? 'padding' : 'position'}
+          behavior="padding"
           keyboardVerticalOffset={65}>
           <View style={{marginTop: 40}}>
             <Text style={styles.text}>First Name</Text>

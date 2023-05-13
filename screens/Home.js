@@ -17,6 +17,7 @@ import SelectMultiple from 'react-native-select-multiple';
 import ImagePicker from 'react-native-image-picker';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import RNFS from 'react-native-fs';
+import Card from './Card';
 
 const {width, height} = Dimensions.get('window');
 
@@ -41,10 +42,12 @@ function Home({navigation}) {
 
     return (
       <View>
-        <Image source={{uri: imageUrl}} style={{width: 100, height: 100}} />
-        <Text>{item.name}</Text>
-        <Text>{item.description}</Text>
-        <Text>{`$${item.price}`}</Text>
+        <Card
+          text={item.title}
+          description={item.description}
+          price={item.price}
+          image={item.image}
+        />
       </View>
     );
   };
@@ -103,40 +106,35 @@ function Home({navigation}) {
         </View>
       </View>
 
-      <Text>ORDER FOR DELIVERY!</Text>
+      <Text style={{margin: 10, fontWeight: 'bold', fontSize: 16}}>
+        ORDER FOR DELIVERY!
+      </Text>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-evenly',
+          marginTop: 10,
+          height: height * 0.066,
+        }}>
+        <View style={styles.starter}>
+          <Text style={styles.text4}>Starters</Text>
+        </View>
+        <View style={styles.starter}>
+          <Text style={styles.text4}>Mains</Text>
+        </View>
+        <View style={styles.starter}>
+          <Text style={styles.text4}>Desserts</Text>
+        </View>
+        <View style={styles.starter}>
+          <Text style={styles.text4}>Drinks</Text>
+        </View>
+      </View>
 
       <FlatList
         data={menuData}
         renderItem={renderMenuItem}
         keyExtractor={item => item.name}
       />
-
-      <Pressable style={styles.button}>
-        <Text
-          style={{fontSize: 23, alignSelf: 'center', fontWeight: '600'}}
-          onPress={() => {
-            try {
-              // Clear all data from the disk
-              AsyncStorage.clear();
-
-              // Navigate to the Onboarding screen
-              navigation.navigate('Home');
-              AsyncStorage.setItem('completedOnboarding', 'true');
-            } catch (error) {
-              console.error('Error logging out:', error);
-            }
-          }}>
-          Logout
-        </Text>
-      </Pressable>
-      <View style={{flexDirection: 'row', justifyContent: 'space-evenly'}}>
-        <Pressable style={[styles.button3, {width: width * 0.32}]}>
-          <Text>Discard changes</Text>
-        </Pressable>
-        <Pressable style={[styles.button2, {width: width * 0.3}]}>
-          <Text style={{fontSize: 15, color: '#EDEFEE'}}>Save changes</Text>
-        </Pressable>
-      </View>
     </View>
   );
 }
@@ -210,6 +208,18 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     borderColor: '#495E57',
     borderWidth: 1,
+  },
+  starter: {
+    width: width * 0.16,
+    height: height * 0.04,
+    backgroundColor: '#EDEFEE',
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text4: {
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
 
